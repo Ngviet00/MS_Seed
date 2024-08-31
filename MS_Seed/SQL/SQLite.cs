@@ -56,8 +56,6 @@ namespace MS_Seed.SQL
 
                 ExecuteNonQuery("PRAGMA cache_size = -20000;");
                 ExecuteNonQuery("PRAGMA journal_mode = WAL;");
-
-                
             }
             catch (Exception ex)
             {
