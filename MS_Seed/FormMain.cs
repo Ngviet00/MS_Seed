@@ -18,16 +18,26 @@ namespace MS_Seed
             //SQLite.Instance.Connect();
 
             ControlPLCMishubishi.Instance.ConnectPLC1();
+
+            //if (ControlPLCMishubishi.Instance.ConnectPLC1())
+            //{
+            //    Console.WriteLine("111");
+            //}
+
+            if (ControlPLCMishubishi.Instance.ConnectPLC2())
+            {
+                Console.WriteLine("111");
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            ControlPLCMishubishi.Instance.WriteBit(1, "M34000", true);
+            ControlPLCMishubishi.Instance.WriteBit(2, "M34000", true);
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ControlPLCMishubishi.Instance.WriteBit(1, "M34000", false);
+            ControlPLCMishubishi.Instance.WriteBit(2, "M34000", false);
         }
     }
 }

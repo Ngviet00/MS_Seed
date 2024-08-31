@@ -1,31 +1,70 @@
-﻿using System;
+﻿using ActUtlTypeLib;
 using MS_Seed.Common;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ActUtlTypeLib;
-using System.Text;
 
 namespace MS_Seed.IndustrialCommunication.PLC
 {
-    public class ControlPLCMishubishi
+    public class DataTypePLC
+    {
+        public string Register { get; set; }
+        public string Title { get; set; }
+        public Enum TypePLC { get; set; }
+        public int ReadOrWrite { get; set; }
+    }
+
+    public enum TYPE_PLC
+    {
+        BIT = 1,
+        WORD = 2,
+        DWORD = 3,
+        FLOAT = 4,
+        STRING = 5
+    }
+
+    public class ControlPLCMishubishi :INotifyPropertyChanged
     {
         public static ControlPLCMishubishi _instance;
 
         private static readonly object _lock = new object();
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public const int READ = 1;
+        public const int WRITE = 2;
+
         private readonly ActUtlType _plc1 = new ActUtlType();
         private readonly ActUtlType _plc2 = new ActUtlType();
         private readonly ActUtlType _plc3 = new ActUtlType();
         private readonly ActUtlType _plc4 = new ActUtlType();
+        private readonly ActUtlType _plc5 = new ActUtlType();
 
-        private readonly Thread thread1;
-        private readonly Thread thread2;
-        private readonly Thread thread3;
-        private readonly Thread thread4;
+        private Thread thread1;
+        private Thread thread2;
+        private Thread thread3;
+        private Thread thread4;
+        private Thread thread5;
+
+        private readonly int PortMx1 = 1;
+        private readonly int PortMx2 = 2;
+        private readonly int PortMx3 = 3;
+        private readonly int PortMx4 = 4;
+        private readonly int PortMx5 = 5;
+
+        private readonly List<DataTypePLC> List1 = new List<DataTypePLC>();
+        private readonly List<DataTypePLC> List2 = new List<DataTypePLC>();
+        private readonly List<DataTypePLC> List3 = new List<DataTypePLC>();
+        private readonly List<DataTypePLC> List4 = new List<DataTypePLC>();
+        private readonly List<DataTypePLC> List5 = new List<DataTypePLC>();
 
         public ControlPLCMishubishi()
         {
-            _plc1.ActLogicalStationNumber = 1;
+
         }
 
         public static ControlPLCMishubishi Instance
@@ -43,28 +82,96 @@ namespace MS_Seed.IndustrialCommunication.PLC
             }
         }
 
-        public void ConnectPLC1()
+        public void Notify([CallerMemberName] string name = "")
         {
-            if (_plc1.Open() == 0)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public bool ConnectPLC1()
+        {
+            try
             {
-                Thread threadReadStatusPLC = new Thread(async () => await ReadStatusPLC());
-                threadReadStatusPLC.Name = "THREAD_READ_STATUS_PLC";
-                threadReadStatusPLC.IsBackground = true;
-                threadReadStatusPLC.Start();
+                ActUtlType plc = GetCurrentIndexPLC(1);
+
+                plc.ActLogicalStationNumber = PortMx1;
+
+                if (plc.Open() == 0)
+                {
+                    AddRegisterToPLC1();
+                    return true;
+                }
+
+                return false;
             }
-            else
+            catch (Exception ex)
             {
-                Global.ShowBoxError($"Error can not connect to PLC");
+                Files.WriteLog($"Can not connect with PLC station {PortMx1}, error: {ex.Message}");
+                Global.ShowBoxError($"Can not connect with PLC station {PortMx1}, error: {ex.Message}");
+                return false;
+            }
+
+            //if (GetCurrentIndexPLC((int)Enums.PLC.PLC_1).Open() == 0)
+            //{
+
+            //}
+
+            //if (_plc1.Open() == 0)
+            //{
+            //    Thread threadReadStatusPLC = new Thread(async () => await ReadStatusPLC());
+            //    threadReadStatusPLC.Name = "THREAD_READ_STATUS_PLC";
+            //    threadReadStatusPLC.IsBackground = true;
+            //    threadReadStatusPLC.Start();
+            //}
+            //else
+            //{
+            //    Global.ShowBoxError($"Error can not connect to PLC");
+            //}
+        }
+
+        public bool ConnectPLC2()
+        {
+            try
+            {
+                ActUtlType plc = GetCurrentIndexPLC(2);
+
+                plc.ActLogicalStationNumber = PortMx2;
+
+                return plc.Open() == 0;
+            }
+            catch (Exception ex)
+            {
+                Files.WriteLog($"Can not connect with PLC station {PortMx2}, error: {ex.Message}");
+                Global.ShowBoxError($"Can not connect with PLC station {PortMx2}, error: {ex.Message}");
+                return false;
             }
         }
 
-        private async Task ReadStatusPLC()
+        public void AddRegisterToPLC1()
         {
-            //while (true)
+            List1.AddRange(new List<DataTypePLC>
+            {
+                new DataTypePLC { Register = "M34000", Title = "ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ },
+                new DataTypePLC { Register = "M34100", Title = "WRITE_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = WRITE},
+            });
+
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    Console.WriteLine("111");
+                    Thread.Sleep(50);
+                }
+            });
+
+            //foreach (var item in List1)
             //{
-            //    Console.WriteLine("111");
-            //    await Task.Delay(20);
+            //    Console.WriteLine(item.Register);
             //}
+        }
+
+        private void ReadDataPLC1()
+        {
+            throw new NotImplementedException();
         }
 
         //list linq => where name => bit

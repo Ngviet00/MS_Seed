@@ -52,17 +52,23 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
 
         public void Close()
         {
-            if (serialPort.IsOpen)
+            if (serialPort != null)
             {
-                serialPort.Close();
+                if (serialPort.IsOpen)
+                {
+                    serialPort.Close();
+                }
             }
         }
 
         public void SendData(string data)
         {
-            if (serialPort.IsOpen)
+            if (serialPort != null)
             {
-                serialPort.WriteLine(data);
+                if (serialPort.IsOpen)
+                {
+                    serialPort.WriteLine(data);
+                }
             }
         }
 
