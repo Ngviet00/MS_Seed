@@ -9,41 +9,62 @@ namespace MS_Seed.Common
 {
     public static class Files
     {
-        private static object lockWriteLog = new object();
+        private static readonly object lockWriteLog = new object();
+        private static readonly object lockWriteLogCustomPath = new object();
         private static object lockWriteCSV = new object();
         private static object lockWriteExcel = new object();
 
         //write log
-        public static void WriteLog(string msg)
+        public static void WriteLog(string message)
         {
-            //lock (lockWriteLog)
-            //{
-            //    string logPath = Path.Combine($@"{ConfigurationManager.AppSettings["PATH_SAVE_FILE_LOG"]}");
+            lock (lockWriteLog)
+            {
+                string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs", DateTime.Now.ToString("yyyy"), DateTime.Now.ToString("MM"));
 
-            //    if (!Directory.Exists(logPath))
-            //    {
-            //        Directory.CreateDirectory(logPath);
-            //    }
+                if (!Directory.Exists(logPath))
+                {
+                    Directory.CreateDirectory(logPath);
+                }
 
-            //    string logFormat = DateTimeOffset.Now.ToString("yyyy_MM_dd HH:mm:ss") + " ==> ";
+                string logFormat = DateTimeOffset.Now.ToString("yyyy_MM_dd HH:mm:ss:ff") + " ==> ";
 
-            //    if (!Directory.Exists(logPath))
-            //    {
-            //        Directory.CreateDirectory(logPath);
-            //    }
+                try
+                {
+                    using (StreamWriter writer = File.AppendText($@"{logPath}\{DateTime.Now.ToString("dd")}.txt"))
+                    {
+                        writer.WriteLine($"{logFormat}{message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error can not write log, error: {ex.Message}");
+                }
+            }
+        }
 
-            //    try
-            //    {
-            //        using (StreamWriter writer = File.AppendText(logPath + "\\" + "loghiport" + ".txt"))
-            //        {
-            //            writer.WriteLine(msg);
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        MessageBox.Show($"Error can not write log, error: {ex.Message}");
-            //    }
-            //}
+        public static void WriteLog(string path, string message)
+        {
+            lock (lockWriteLogCustomPath)
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                string logFormat = DateTimeOffset.Now.ToString("yyyy_MM_dd HH:mm:ss:ff") + " ==> ";
+
+                try
+                {
+                    using (StreamWriter writer = File.AppendText($@"{path}\{DateTime.Now.ToString("dd")}.txt"))
+                    {
+                        writer.WriteLine($"{logFormat}{message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error can not write log, error: {ex.Message}");
+                }
+            }
         }
 
         //write csv
@@ -84,51 +105,51 @@ namespace MS_Seed.Common
             });
         }
 
-        public static void DeleteFileLog(string path, DateTime now, int dayDelete)
-        {
-            Task.Run(async () =>
-            {
+        //public static void DeleteFileLog(string path, DateTime now, int dayDelete)
+        //{
+        //    Task.Run(async () =>
+        //    {
 
-            });
+        //    });
 
-            if (!Directory.Exists(path))
-            {
-                WriteLog($"Not found path to delete file!");
-                return;
-            }
+        //    if (!Directory.Exists(path))
+        //    {
+        //        WriteLog($"Not found path to delete file!");
+        //        return;
+        //    }
 
-            int batchSize = 1000;
+        //    int batchSize = 1000;
 
-            var fileBatch = Directory.EnumerateFiles(path).Take(batchSize);
+        //    var fileBatch = Directory.EnumerateFiles(path).Take(batchSize);
 
-            while (fileBatch.Any())
-            {
-                foreach (var file in fileBatch)
-                {
-                    DateTime creationTime = File.GetCreationTime(file);
-                    TimeSpan fileAge = now - creationTime;
-                    if (fileAge.TotalDays > dayDelete)
-                    {
-                        try
-                        {
-                            File.Delete(file);
-                        }
-                        catch (Exception ex)
-                        {
-                            WriteLog($"Error can not delete file, error: {ex.Message}");
-                        }
-                    }
-                }
+        //    while (fileBatch.Any())
+        //    {
+        //        foreach (var file in fileBatch)
+        //        {
+        //            DateTime creationTime = File.GetCreationTime(file);
+        //            TimeSpan fileAge = now - creationTime;
+        //            if (fileAge.TotalDays > dayDelete)
+        //            {
+        //                try
+        //                {
+        //                    File.Delete(file);
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    WriteLog($"Error can not delete file, error: {ex.Message}");
+        //                }
+        //            }
+        //        }
 
-                fileBatch = Directory.EnumerateFiles(path).Skip(batchSize).Take(batchSize);
-            }
+        //        fileBatch = Directory.EnumerateFiles(path).Skip(batchSize).Take(batchSize);
+        //    }
 
-            var directories = Directory.GetDirectories(path);
+        //    var directories = Directory.GetDirectories(path);
 
-            foreach (var directory in directories)
-            {
-                DeleteFileLog(directory, now, dayDelete);
-            }
-        }
+        //    foreach (var directory in directories)
+        //    {
+        //        DeleteFileLog(directory, now, dayDelete);
+        //    }
+        //}
     }
 }
