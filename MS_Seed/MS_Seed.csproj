@@ -217,6 +217,8 @@
     <Folder Include="Class\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\MSlogo.png" />
+    <None Include="Resources\images.jfif" />
     <Content Include="setting.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
