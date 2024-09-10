@@ -48,26 +48,28 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
 
         private ActUtlType plc;
         private bool isReading;
+        private int indexPLC;
 
         public List<Register> Registers { get; private set; }
 
-        private ControlPLCMishu(int plcStation)
+        private ControlPLCMishu(int idxPLC, int plcStation)
         {
             plc = new ActUtlType();
             plc.ActLogicalStationNumber = plcStation;
+            indexPLC = idxPLC;
             isReading = false;
             Registers = new List<Register>();
         }
 
-        public static ControlPLCMishu GetInstance(int plcStation)
+        public static ControlPLCMishu GetInstance(int indexPLC, int plcStation)
         {
             lock (_lock)
             {
                 if (!_instances.ContainsKey(plcStation))
                 {
-                    _instances[plcStation] = new ControlPLCMishu(plcStation);
+                    _instances[indexPLC] = new ControlPLCMishu(indexPLC, plcStation);
                 }
-                return _instances[plcStation];
+                return _instances[indexPLC];
             }
         }
 
@@ -137,7 +139,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                         register.CurrentValue = readValue;
                     }
                 }
-                Thread.Sleep(100); // Tạm dừng giữa các lần đọc
+                Thread.Sleep(50); // Tạm dừng giữa các lần đọc
             }
         }
     }

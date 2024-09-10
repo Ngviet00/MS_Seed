@@ -17,16 +17,18 @@ namespace MS_Seed
         private ControlPLCMishu plc2Controller;
 
         private List<ControlPLCMishu> plcControllers;
+        
 
         public FormMain()
         {
             InitializeComponent();
 
             plcControllers = new List<ControlPLCMishu>();
+            int[] PortMX = { 1, 2, 3, 4 };
 
-            for (int i = 1; i <= 2; i++) 
+            for (int i = 1; i <= 3; i++) 
             {
-                var plcController = ControlPLCMishu.GetInstance(i);
+                var plcController = ControlPLCMishu.GetInstance(i, PortMX[i-1]);
 
                 if (!plcControllers.Contains(plcController))
                 {
@@ -40,6 +42,8 @@ namespace MS_Seed
                     }
 
                     plcControllers.Add(plcController);
+
+                    plcController.StartReading();
                 }
             }
         }
@@ -64,10 +68,10 @@ namespace MS_Seed
             //plc1Controller.StartReading();
             //plc2Controller.StartReading();
 
-            foreach (var plcController in plcControllers)
-            {
-                plcController.StartReading();
-            }
+            //foreach (var plcController in plcControllers)
+            //{
+            //    plcController.StartReading();
+            //}
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -85,11 +89,33 @@ namespace MS_Seed
 
         private void ConfigurePLCRegisters(ControlPLCMishu plcController, int plcIndex)
         {
-            plcController.ConfigureRegisters(
-                new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
-                new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
-            // Thêm nhiều thanh ghi nếu cần
-            );
+            if (plcIndex == 1)
+            {
+                plcController.ConfigureRegisters(
+                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                );
+                return;
+            }
+
+            if (plcIndex == 2)
+            {
+                plcController.ConfigureRegisters(
+                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                );
+                return;
+            }
+
+            if (plcIndex == 3)
+            {
+                plcController.ConfigureRegisters(
+                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                );
+                return;
+            }
+
         }
     }
 }
