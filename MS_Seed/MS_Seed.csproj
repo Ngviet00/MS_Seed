@@ -132,6 +132,8 @@
   <ItemGroup>
     <Compile Include="Common\Files.cs" />
     <Compile Include="Enums\Enums.cs" />
+    <Compile Include="Extensions\IndustrialCommunication\PLC\PLCMis.cs" />
+    <Compile Include="Extensions\IndustrialCommunication\PLC\TestPLC.cs" />
     <Compile Include="Extensions\Printer\ZebraPrinter.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>

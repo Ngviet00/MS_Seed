@@ -1,196 +1,95 @@
-﻿using MS_Seed.IndustrialCommunication.Ethernet;
+﻿using Microsoft.Win32;
+using MS_Seed.Extensions.IndustrialCommunication.PLC;
+using MS_Seed.IndustrialCommunication.Ethernet;
 using MS_Seed.IndustrialCommunication.PLC;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Windows.Forms;
+using static MS_Seed.Enums;
 
 namespace MS_Seed
 {
     public partial class FormMain : Form
     {
-        private List<ControlPLC> controlPLCs;
+        private ControlPLCMishu plc1Controller;
+        private ControlPLCMishu plc2Controller;
+
+        private List<ControlPLCMishu> plcControllers;
 
         public FormMain()
         {
             InitializeComponent();
 
-            //ControlSerialPort controlSerialPort = new ControlSerialPort();
-            //controlSerialPort.Open();
+            plcControllers = new List<ControlPLCMishu>();
 
-            //SQLite.Instance.Connect();
+            for (int i = 1; i <= 2; i++) 
+            {
+                var plcController = ControlPLCMishu.GetInstance(i);
 
-            //ControlPLCMishubishi.Instance.ConnectPLC1(1);
+                if (!plcControllers.Contains(plcController))
+                {
+                    plcController.ConnectPLC();
 
-            //ControlPLCMishubishi.Instance.ConnectPLC2(2);
+                    ConfigurePLCRegisters(plcController, i);
 
-            //ControlPLCMishubishi.Instance.ConnectToPLC(1);
-            //ControlPLCMishubishi.Instance.ConnectToPLC(2);
+                    foreach (var register in plcController.Registers)
+                    {
+                        register.PropertyChanged += Register_PropertyChanged;
+                    }
 
-
-            // Defined register of each plc then connect to PLC, ex: PLC_1: 1, PLC_2: 2
-            //ControlPLCMishubishi.Instance.ListDataTypePlcs[1].AddRange(new List<DataTypePLC>
-            //{
-            //    new DataTypePLC { Register = "M34000", Title = "ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34300", Title = "TEST_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34100", Title = "WRITE_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.WRITE },
-            //});
-
-            //ControlPLCMishubishi.Instance.ListDataTypePlcs[2].AddRange(new List<DataTypePLC>
-            //{
-            //    new DataTypePLC { Register = "M34000", Title = "ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34300", Title = "TEST_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34100", Title = "WRITE_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.WRITE },
-            //});
-
-            //ControlPLCMishubishi.Instance.ConnectPLC(1, ControlPLCMishubishi.Instance.ListDataTypePlcs[1], 1);
-            //ControlPLCMishubishi.Instance.ConnectPLC(2, ControlPLCMishubishi.Instance.ListDataTypePlcs[2], 2);
-
-            //ControlPLCMishubishi.Instance.PropertyChanged1 += Plc_PropertyChanged;
-            //ControlPLCMishubishi.Instance.PropertyChanged2 += Plc_PropertyChanged1;
-
-
-            
-            
-
-            //foreach (var plc in ControlPLCMishubishi.Instance._plcDataList)
-            //{
-            //    plc.PropertyChanged += Plc_PropertyChanged;
-            //}
-
-
-            //ControlPLCMishubishi.Instance.PropertyChanged1 += Plc_PropertyChanged;
-
-            //foreach (var plcData in ControlPLCMishubishi.Instance._plcDataList)
-            //{
-            //    plcData.PropertyChanged += (sender, e) =>
-            //    {
-            //        var obj = sender as PLCData;
-            //        if (obj != null)
-            //        {
-            //            if (obj.Title == "ALIVE")
-            //            {
-            //                Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-            //            }
-
-            //            if (obj.Title == "TEST_ALIVE")
-            //            {
-            //                Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-            //            }
-
-            //            //Console.WriteLine($"PLC {data.IndexPLC} - {e.PropertyName} changed to: {data.CurrentValue} - {data.Title}");
-            //        }
-            //    };
-            //}
-
-            //ControlPLCMishubishi.Instance.WriteBit(1, "ALIVE", true);
-
-
-
-            //ControlPLCMishubishi.Instance.ConnectPLC(2);
-
-            //ControlPLCMishubishi.Instance.PropertyChanged += Plc_PropertyChanged;
-
+                    plcControllers.Add(plcController);
+                }
+            }
         }
-
-        //private void Plc_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        //{
-        //    var obj = ((ControlPLCMishubishi)sender);
-
-        //    if (obj != null)
-        //    {
-        //        if (obj.Title == "ALIVE")
-        //        {
-        //            Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        }
-        //        else if (obj.Title == "TEST_ALIVE")
-        //        {
-        //            Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        }
-        //        //if (obj.Title == "TEST_ALIVE")
-        //        //{
-        //        //    Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        //}
-
-        //    }
-
-        //    //var plc = sender as ControlPLC;
-
-        //    //if (e.PropertyName == nameof(ControlPLC.CurrentValue))
-        //    //{
-        //    //    Console.WriteLine($"PLC {plc.IndexPLC} ({plc.Title}) has new value: {plc.CurrentValue}");
-        //    //    // Handle the new value
-        //    //    //essageBox.Show($"PLC {plc.IndexPLC} ({plc.Title}) has new value: {plc.CurrentValue}");
-        //    //}
-        //}
-
-        //private void Plc_PropertyChanged1(object sender, PropertyChangedEventArgs e)
-        //{
-        //    var obj = ((ControlPLCMishubishi)sender);
-
-        //    if (obj != null)
-        //    {
-        //        if (obj.Title == "ALIVE")
-        //        {
-        //            Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        }
-        //        else if (obj.Title == "TEST_ALIVE")
-        //        {
-        //            Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        }
-        //        //if (obj.Title == "TEST_ALIVE")
-        //        //{
-        //        //    Console.WriteLine($"plc-{obj.IndexPLC}-title-{obj.Title}-current_value-{obj.CurrentValue}");
-        //        //}
-
-        //    }
-
-        //    //var plc = sender as ControlPLC;
-
-        //    //if (e.PropertyName == nameof(ControlPLC.CurrentValue))
-        //    //{
-        //    //    Console.WriteLine($"PLC {plc.IndexPLC} ({plc.Title}) has new value: {plc.CurrentValue}");
-        //    //    // Handle the new value
-        //    //    //essageBox.Show($"PLC {plc.IndexPLC} ({plc.Title}) has new value: {plc.CurrentValue}");
-        //    //}
-        //}
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //ControlPLCMishubishi.Instance.WriteBit(1, "M34000", true);
-            //ControlPLCMishubishi.Instance.WriteBit(2, "M34000", true);
+
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void Register_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            //ControlPLCMishubishi.Instance.WriteBit(2, "M34000", false);
-            //ControlPLCMishubishi.Instance.WriteBit(2, "M34000", false);
-        }
+            var register = sender as Register;
 
-        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //foreach (var item in ControlPLCMishubishi.Instance.ListActUtlType)
-            //{
-            //    item?.Close();
-            //    item?.Disconnect();
-            //}
+            if (e.PropertyName == "CurrentValue")
+            {
+                Console.WriteLine($"PLC {register.PlcIndex}: {register.Title} changed to {register.CurrentValue}");
+            }
         }
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            //ControlPLCMishubishi.Instance.ListDataTypePlcs[1].AddRange(new List<DataTypePLC>
-            //{
-            //    new DataTypePLC { Register = "M34000", Title = "ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34300", Title = "TEST_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.READ, ReadAlway = true },
-            //    new DataTypePLC { Register = "M34100", Title = "WRITE_ALIVE", TypePLC = TYPE_PLC.BIT, ReadOrWrite = READ_OR_WRITE.WRITE },
-            //});
+            //plc1Controller.StartReading();
+            //plc2Controller.StartReading();
 
-            //ControlPLCMishubishi.Instance.ConnectPLC(1, ControlPLCMishubishi.Instance.ListDataTypePlcs[1], 1);
+            foreach (var plcController in plcControllers)
+            {
+                plcController.StartReading();
+            }
+        }
 
-            //foreach (var plc in ControlPLCMishubishi.Instance._plcDataList)
-            //{
-            //    plc.PropertyChanged += Plc_PropertyChanged;
-            //}
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach (var plcController in plcControllers)
+            {
+                plcController.DisconnectPLC();
+            }
+        }
+
+        private void ConfigurePLCRegisters(ControlPLCMishu plcController, int plcIndex)
+        {
+            plcController.ConfigureRegisters(
+                new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
+                new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+            // Thêm nhiều thanh ghi nếu cần
+            );
         }
     }
 }

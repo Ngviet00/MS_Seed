@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Configuration;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MS_Seed.Common
@@ -12,6 +11,7 @@ namespace MS_Seed.Common
         private static readonly object lockWriteLog = new object();
         private static readonly object lockWriteLogCustomPath = new object();
         private static object lockWriteCSV = new object();
+        private static object lockWriteFileTxt = new object();
         private static object lockWriteExcel = new object();
 
         //write log
@@ -79,31 +79,108 @@ namespace MS_Seed.Common
 
         }
 
-        public static void ThreadAutoDeleteOldFile()
+        public static void WriteFileToTxt(string filePath, Dictionary<string, string> values)
         {
-            Task.Run(async () =>
+            lock (lockWriteFileTxt)
             {
                 try
                 {
-                    int day = int.Parse(ConfigurationManager.AppSettings["DAY_AUTO_DELETE_OLD_FILE"]);
-                    string autoDelete = ConfigurationManager.AppSettings["AUTO_DELETE_OLD_FILE"];
+                    var lines = File.ReadAllLines(filePath).ToList();
+                    var keysToUpdate = values.Keys.ToList();
 
-                    while (true)
+                    var updatedKeys = new HashSet<string>();
+
+                    for (int i = 0; i < lines.Count; i++)
                     {
-                        if (autoDelete == "true")
+                        var parts = lines[i].Split(new[] { '=' }, 2);
+                        if (parts.Length == 2)
                         {
-                            //DeleteFileLog();
+                            string key = parts[0].Trim();
+                            if (values.ContainsKey(key))
+                            {
+                                lines[i] = $"{key}= {values[key]}";
+                                updatedKeys.Add(key);
+                            }
                         }
-
-                        await Task.Delay(TimeSpan.FromDays(1));
                     }
+
+                    foreach (var key in keysToUpdate)
+                    {
+                        if (!updatedKeys.Contains(key))
+                        {
+                            lines.Add($"{key}= {values[key]}");
+                        }
+                    }
+
+                    File.WriteAllLines(filePath, lines);
                 }
                 catch (Exception ex)
                 {
-
+                    Console.WriteLine($"Error can not write value to file txt: {ex.Message}");
                 }
-            });
+            }
         }
+
+        public static Dictionary<string, string> ReadValueFileTxt(string filePath, List<string> keys)
+        {
+            Dictionary<string, string> values = new Dictionary<string, string>();
+
+            try
+            {
+                string[] lines = File.ReadAllLines(filePath);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split('=');
+
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+
+                        if (keys.Contains(key))
+                        {
+                            values[key] = parts[1].Trim();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error can not read value from file txt: {ex.Message}");
+            }
+
+            return values;
+        }
+
+        public static string GetFilePathSetting()
+        {
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "setting.txt");
+        }
+
+        //public static void ThreadAutoDeleteOldFile()
+        //{
+        //    Task.Run(async () =>
+        //    {
+        //        try
+        //        {
+        //            int day = int.Parse(ConfigurationManager.AppSettings["DAY_AUTO_DELETE_OLD_FILE"]);
+        //            string autoDelete = ConfigurationManager.AppSettings["AUTO_DELETE_OLD_FILE"];
+
+        //            while (true)
+        //            {
+        //                if (autoDelete == "true")
+        //                {
+        //                    //DeleteFileLog();
+        //                }
+
+        //                await Task.Delay(TimeSpan.FromDays(1));
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+
+        //        }
+        //    });
+        //}
 
         //public static void DeleteFileLog(string path, DateTime now, int dayDelete)
         //{

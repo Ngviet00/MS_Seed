@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static MS_Seed.Enums;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace MS_Seed.IndustrialCommunication.PLC
 {
@@ -129,6 +130,8 @@ namespace MS_Seed.IndustrialCommunication.PLC
 
         #region Định nghĩa _plc, thread, PortMx, List thanh ghi theo số lượng PLC kết nối
 
+        private ActUtlType _plc1 = new ActUtlType();
+
         // Defined list threads
         private Thread[] _threads = new Thread[10];
 
@@ -208,8 +211,10 @@ namespace MS_Seed.IndustrialCommunication.PLC
         private string _title;
         public string Title
         {
-            get { return _title; }
-
+            get
+            {
+                return _title;
+            }
             set
             {
                 if (_title != value)
@@ -217,23 +222,31 @@ namespace MS_Seed.IndustrialCommunication.PLC
                     _title = value;
                     Notify1();
                 }
+                _title = value;            
             }
         }
 
         private object _currentValue;
         public object CurrentValue
         {
-            get { return _currentValue; }
+            get
+            {
+                return _currentValue;
+            }
 
             set
             {
-                if (_currentValue != value)
+                if (value != null && !object.Equals(value, _currentValue))
                 {
                     _currentValue = value;
                     Notify1();
                 }
+                _currentValue = value;
             }
         }
+
+
+    
 
         private int _indexPLC1;
         public int IndexPLC1
@@ -334,6 +347,68 @@ namespace MS_Seed.IndustrialCommunication.PLC
                     }
                     return _instance;
                 }
+            }
+        }
+
+        public bool ConnectPLC1()
+        {
+            try
+            {
+                _plc1.ActLogicalStationNumber = 1;
+
+                if (_plc1.Open() == 0)
+                {
+                    Thread ReadDataFromPLC1 = new Thread(() => ReadDataFromPLC111());
+                    ReadDataFromPLC1.IsBackground = true;
+                    ReadDataFromPLC1.Name = "THREAD_READ_DATA_PLC_1";
+                    ReadDataFromPLC1.Start();
+
+                    return true;
+                }
+
+                return false;
+                
+                //var plcData = new PLCData { IndexPLC = indexPLC };
+                //_plcDataList.Add(plcData);
+
+                //listRegister = listRegister.Where(i => i.ReadOrWrite == READ_OR_WRITE.READ).ToList();
+
+                //ListActUtlType[indexPLC - 1].ActLogicalStationNumber = port;
+
+                //if (ListActUtlType[indexPLC - 1].Open() == 0)
+                //{
+                //    // DEFINED REGISTER PLC
+                //    _threads[indexPLC - 1] = new Thread(() => ReadDataFromPLC(listRegister, plcData, indexPLC, ListActUtlType[indexPLC - 1]));
+                //    _threads[indexPLC - 1].IsBackground = true;
+                //    _threads[indexPLC - 1].Name = $"THREAD_READ_PLC_INDEX_{indexPLC}";
+                //    _threads[indexPLC - 1].Start();
+                //    //Task.Delay(4).Wait();
+
+                //    return true;
+                //}
+                //else
+                //{
+                //    Global.ShowBoxError($"Error can not connect to PLC station number: {port}");
+                //    return false;
+                //}
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            
+        }
+
+        public void ReadDataFromPLC111()
+        {
+            while (true)
+            {
+                int result = _plc1.GetDevice("B0", out int value);
+                //_plc1.GetDevice2("M34000", out short result);
+
+                Title = "ALIVE";
+                CurrentValue = result == 1 ? true : false;
+                Thread.Sleep(50);
             }
         }
 
