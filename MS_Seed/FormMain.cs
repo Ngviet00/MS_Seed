@@ -1,121 +1,153 @@
-﻿using Microsoft.Win32;
-using MS_Seed.Extensions.IndustrialCommunication.PLC;
-using MS_Seed.IndustrialCommunication.Ethernet;
-using MS_Seed.IndustrialCommunication.PLC;
+﻿using MS_Seed.Extensions.IndustrialCommunication.PLC;
+using MS_Seed.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows.Forms;
-using static MS_Seed.Enums;
 
 namespace MS_Seed
 {
     public partial class FormMain : Form
     {
-        private ControlPLCMishu plc1Controller;
-        private ControlPLCMishu plc2Controller;
-
-        private List<ControlPLCMishu> plcControllers;
-        
+        //define list plc and list port mx component in control plc mishubishi
+        private List<ControlPLCMishubishi> _listPlc = new List<ControlPLCMishubishi>();
+        readonly int[] ActStationNumbers = { 1, 2, 3, 4 };
 
         public FormMain()
         {
             InitializeComponent();
 
-            plcControllers = new List<ControlPLCMishu>();
-            int[] PortMX = { 1, 2, 3, 4 };
-
-            for (int i = 1; i <= 3; i++) 
+            for (int i = 1; i <= 1; i++)
             {
-                var plcController = ControlPLCMishu.GetInstance(i, PortMX[i-1]);
+                var plc = ControlPLCMishubishi.GetInstance(i, ActStationNumbers[i - 1]);
 
-                if (!plcControllers.Contains(plcController))
+                if (!_listPlc.Contains(plc))
                 {
-                    plcController.ConnectPLC();
+                    plc.ConnectPLC();
 
-                    ConfigurePLCRegisters(plcController, i);
+                    ConfigurePLCRegisters(plc, i);
 
-                    foreach (var register in plcController.Registers)
+                    foreach (var register in plc.Registers)
                     {
                         register.PropertyChanged += Register_PropertyChanged;
                     }
 
-                    plcControllers.Add(plcController);
+                    _listPlc.Add(plc);
 
-                    plcController.StartReading();
+                    plc.StartReading();
                 }
             }
         }
 
+        //WRITE
         private void button1_Click(object sender, EventArgs e)
         {
+            //STRING
+            //ControlPLCMishubishi.WriteString(1, "D45000", "ok la1");
 
+            //FLOAT
+            //float[] value = new float[1] { 0.4354f };
+            //ControlPLCMishubishi.WriteFloat(1, "D45000", 1, ref value);
+
+            //DWORD
+            //int[] res = new int[1] { 20 };
+            //ControlPLCMishubishi.WriteDWord(1, "D45000", 1, ref res);
+
+            //WORD
+            //short[] rs = new short[1] { 1 };
+            //ControlPLCMishubishi.WriteWord(1, "D45000", 1, ref rs);
+
+            //BIT
+            //ControlPLCMishubishi.WriteBit(1, "M34000", true);
+        }
+
+        //READ
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            //STRING
+            //var a = ControlPLCMishubishi.ReadString(1, "D45000", 10); //10 bit
+            //Console.WriteLine(a);
+
+            //FLOAT
+            //float[] res = new float[1];
+            //ControlPLCMishubishi.ReadFloat(1, "D45000", 1, out res);
+            //Console.WriteLine(res[0]);
+
+            //DWORD
+            //int[] res = new int[1];
+            //ControlPLCMishubishi.ReadDWord(1, "D45000", 1, out res);
+            //Console.WriteLine(res[0]);
+
+            //WORD
+            //ControlPLCMishubishi.ReadWord(1, "D45000", 1, out short[] rs);
+            //Console.WriteLine(rs[0]);
+
+            //BIT
+            //ControlPLCMishubishi.WriteBit(1, "M34000", false);
         }
 
         private void Register_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var register = sender as Register;
+            var obj = sender as Register;
 
-            if (e.PropertyName == "CurrentValue")
+            if (obj.Title == "ALIVE")
             {
-                Console.WriteLine($"PLC {register.PlcIndex}: {register.Title} changed to {register.CurrentValue}");
+                Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
             }
-        }
-
-        private void FormMain_Load(object sender, EventArgs e)
-        {
-            //plc1Controller.StartReading();
-            //plc2Controller.StartReading();
-
-            //foreach (var plcController in plcControllers)
-            //{
-            //    plcController.StartReading();
-            //}
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-
+            else if (obj.Title == "TEST_ALIVE")
+            {
+                Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
+            }
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach (var plcController in plcControllers)
+            foreach (var plc in _listPlc)
             {
-                plcController.DisconnectPLC();
+                plc.DisconnectPLC();
             }
         }
 
-        private void ConfigurePLCRegisters(ControlPLCMishu plcController, int plcIndex)
+        private void ConfigurePLCRegisters(ControlPLCMishubishi plc, int plcIndex)
         {
             if (plcIndex == 1)
             {
-                plcController.ConfigureRegisters(
-                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                plc.ConfigureRegisters(
+                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
                 );
-                return;
             }
-
-            if (plcIndex == 2)
+            else if (plcIndex == 2)
             {
-                plcController.ConfigureRegisters(
-                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                plc.ConfigureRegisters(
+                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
                 );
-                return;
             }
-
-            if (plcIndex == 3)
+            else if (plcIndex == 3)
             {
-                plcController.ConfigureRegisters(
-                    new Register { Title = $"PLC{plcIndex} Register 1", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = $"PLC{plcIndex} Register 2", Address = "M34001", PlcIndex = plcIndex }
+                plc.ConfigureRegisters(
+                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
+                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
                 );
-                return;
             }
+        }
 
+        private void pictureBtnSetting_Click(object sender, EventArgs e)
+        {
+            FormSetting fs = new FormSetting();
+            fs.ShowDialog();
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            lblTime.Text = DateTime.Now.ToString("dddd, MMM dd, yyyy | HH:mm:ss");
+        }
+
+        private void picturePLC_Click(object sender, EventArgs e)
+        {
+            FormTestPLC formPLC = new FormTestPLC();
+            formPLC.ShowDialog();
         }
     }
 }
