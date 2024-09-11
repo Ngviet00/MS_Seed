@@ -63,7 +63,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                         plc.GetDevice(register.Address, out int readValue);
                         register.CurrentValue = readValue;
                     }
-                    Thread.Sleep(10);
+                    Thread.Sleep(100);
                 }
             });
         }
