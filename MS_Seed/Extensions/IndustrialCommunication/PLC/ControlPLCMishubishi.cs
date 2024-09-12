@@ -21,7 +21,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
 
         public List<Register> Registers { get; set; }
         private static List<Register> TempRegisters { get; set; } = new List<Register>();
-        private static List<Register> ReadRegisters { get; set; } = new List<Register>();
 
         private ControlPLCMishubishi(int plcIndex, int plcStation)
         {
@@ -41,6 +40,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                 {
                     _instances[indexPLC] = new ControlPLCMishubishi(indexPLC, plcStation);
                 }
+
                 return _instances[indexPLC];
             }
         }
@@ -122,7 +122,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     else if (register.TypeDataPLC == TYPE_DATA_PLC.STRING)
                     {
                         ReadWord(register.PlcIndex, register.Address, 25, out short[] rs);
-
                         register.CurrentValue = ConvertShortArrToString(rs);
                     }
                     else if (register.TypeDataPLC == TYPE_DATA_PLC.FLOAT)
@@ -155,15 +154,14 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             try
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.WRITE);
-
-                if (item is null)
+                
+                if (_instances[plcIndex].plc.SetDevice2(item?.Address ?? registerOrTitle, value ? (short)1 : (short)0) == 0)
                 {
-                    Global.ShowBoxError("Not found register to write bit!");
-                    return false;
+                    return true;
                 }
 
-                var result = _instances[plcIndex].plc.SetDevice2(item.Address, value ? (short)1 : (short)0);
-                return result == 1 || result == 0;
+                Global.ShowBoxError("Write Bit unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -179,14 +177,13 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.READ);
 
-                if (item is null)
+                if (_instances[plcIndex].plc.GetDevice2(item?.Address ?? registerOrTitle, out short value) == 0)
                 {
-                    Global.ShowBoxError("Not found register to read bit!");
-                    return false;
+                    return value == 1;
                 }
 
-                _instances[plcIndex].plc.GetDevice2(item.Address, out short value);
-                return value == 1;
+                Global.ShowBoxError("Read Bit unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -201,14 +198,14 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             try
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.WRITE);
-
-                if (item is null)
+                
+                if (_instances[plcIndex].plc.WriteDeviceBlock2(item?.Address ?? registerOrTitle, leng, ref data[0]) == 0)
                 {
-                    Global.ShowBoxError("Not found register to write word!");
-                    return false;
+                    return true;
                 }
 
-                return _instances[plcIndex].plc.WriteDeviceBlock2(item.Address, leng, ref data[0]) == 0;
+                Global.ShowBoxError("Write Word unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -224,15 +221,15 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.READ);
 
-                if (item is null)
+                data = new short[leng];
+
+                if (_instances[plcIndex].plc.ReadDeviceBlock2(item?.Address ?? registerOrTitle, leng, out data[0]) == 0)
                 {
-                    Global.ShowBoxError("Not found register to read word!");
-                    data = null;
-                    return false;
+                    return true;
                 }
 
-                data = new short[leng];
-                return _instances[plcIndex].plc.ReadDeviceBlock2(item.Address, leng, out data[0]) == 0;
+                Global.ShowBoxError("Read Word unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -249,12 +246,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.WRITE);
 
-                if (item is null)
-                {
-                    Global.ShowBoxError("Not found register to write DWord!");
-                    return false;
-                }
-
                 short[] shorts = new short[leng * 2];
 
                 for (int i = 0; i < leng; i++)
@@ -264,7 +255,13 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     shorts[(i * 2) + 1] = arr[0];
                 }
 
-                return _instances[plcIndex].plc.WriteDeviceBlock2(item.Address, leng * 2, ref shorts[0]) == 0;
+                if (_instances[plcIndex].plc.WriteDeviceBlock2(item?.Address ?? registerOrTitle, leng * 2, ref shorts[0]) == 0)
+                {
+                    return true;
+                }
+
+                Global.ShowBoxError("Write DWord unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -280,17 +277,10 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.READ);
 
-                if (item is null)
-                {
-                    Global.ShowBoxError("Not found register to read DWord!");
-                    data = null;
-                    return false;
-                }
-
                 data = new int[leng];
                 var res = new short[leng * 2];
 
-                if (_instances[plcIndex].plc.ReadDeviceBlock2(item.Address, leng * 2, out res[0]) == 0)
+                if (_instances[plcIndex].plc.ReadDeviceBlock2(item?.Address ?? registerOrTitle, leng * 2, out res[0]) == 0)
                 {
                     for (int i = 0; i < leng; i++)
                     {
@@ -301,6 +291,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
+                Global.ShowBoxError("Read DWord unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -317,15 +308,15 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             try
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.WRITE);
-
-                if (item is null)
+                short[] res4 = ConvertStringToShortArr(currentValue);
+                
+                if (WriteWord(plcIndex, item?.Address ?? registerOrTitle, res4.Length, ref res4))
                 {
-                    Global.ShowBoxError("Not found register to write string!");
-                    return false;
+                    return true;
                 }
 
-                short[] res4 = ConvertStringToShortArr(currentValue);
-                return WriteWord(plcIndex, item.Address, res4.Length, ref res4);
+                Global.ShowBoxError("Write string unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -340,15 +331,14 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             try
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.READ);
-
-                if (item is null)
+                
+                if (ReadWord(plcIndex, item?.Address ?? registerOrTitle, length, out short[] res4))
                 {
-                    Global.ShowBoxError("Not found register to read string!");
-                    return string.Empty;
+                    return ConvertShortArrToString(res4);
                 }
 
-                ReadWord(plcIndex, item.Address, length, out short[] res4);
-                return ConvertShortArrToString(res4);
+                Global.ShowBoxError("Read string unsuccessfully!");
+                return string.Empty;
             }
             catch (Exception ex)
             {
@@ -364,12 +354,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.WRITE);
 
-                if (item is null)
-                {
-                    Global.ShowBoxError("Not found register to write float!");
-                    return false;
-                }
-
                 short[] shorts = new short[length * 2];
 
                 for (int i = 0; i < length; i++)
@@ -379,7 +363,13 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     shorts[(i * 2) + 1] = arr[0];
                 }
 
-                return _instances[plcIndex].plc.WriteDeviceBlock2(item.Address, length * 2, ref shorts[0]) == 0;
+                if (_instances[plcIndex].plc.WriteDeviceBlock2(item?.Address ?? registerOrTitle, length * 2, ref shorts[0]) == 0)
+                {
+                    return true;
+                }
+
+                Global.ShowBoxError("Write float unsuccessfully!");
+                return false;
             }
             catch (Exception ex)
             {
@@ -395,17 +385,10 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
             {
                 var item = TempRegisters.Find(e => (e.Title == registerOrTitle.Trim().ToUpper() || e.Address == registerOrTitle.Trim().ToUpper()) && e.ReadOrWrite == READ_OR_WRITE.READ);
 
-                if (item is null)
-                {
-                    Global.ShowBoxError("Not found register to read float!");
-                    data = null;
-                    return false;
-                }
-
                 data = new float[length];
                 var res = new short[length * 2];
 
-                if (_instances[plcIndex].plc.ReadDeviceBlock2(item.Address, length * 2, out res[0]) == 0)
+                if (_instances[plcIndex].plc.ReadDeviceBlock2(item?.Address ?? registerOrTitle, length * 2, out res[0]) == 0)
                 {
                     for (int i = 0; i < length; i++)
                     {
@@ -416,6 +399,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
+                Global.ShowBoxError("Read float unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
