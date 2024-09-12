@@ -3,6 +3,7 @@ using MS_Seed.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MS_Seed
@@ -17,87 +18,92 @@ namespace MS_Seed
         {
             InitializeComponent();
 
-            for (int i = 1; i <= 1; i++)
+            Task.Run(() =>
             {
-                var plc = ControlPLCMishubishi.GetInstance(i, ActStationNumbers[i - 1]);
-
-                if (!_listPlc.Contains(plc))
+                for (int i = 1; i <= 4; i++)
                 {
-                    plc.ConnectPLC();
+                    var plc = ControlPLCMishubishi.GetInstance(i, ActStationNumbers[i - 1]);
 
-                    ConfigurePLCRegisters(plc, i);
-
-                    foreach (var register in plc.Registers)
+                    if (!_listPlc.Contains(plc))
                     {
-                        register.PropertyChanged += Register_PropertyChanged;
+                        plc.ConnectPLC();
+
+                        ConfigurePLCRegisters(plc, i);
+
+                        foreach (var register in plc.Registers)
+                        {
+                            register.PropertyChanged += Register_PropertyChanged;
+                        }
+
+                        _listPlc.Add(plc);
+
+                        plc.StartReading();
                     }
-
-                    _listPlc.Add(plc);
-
-                    plc.StartReading();
                 }
-            }
+            });
         }
 
         //WRITE
-        private void button1_Click(object sender, EventArgs e)
+        private void button1_Click_2(object sender, EventArgs e)
         {
-            //STRING
-            //ControlPLCMishubishi.WriteString(1, "D45000", "ok la1");
+            ////STRING
+            //ControlPLCMishubishi.WriteString(1, "WRITE_STRING", "TEST_ABC");
 
-            //FLOAT
-            //float[] value = new float[1] { 0.4354f };
-            //ControlPLCMishubishi.WriteFloat(1, "D45000", 1, ref value);
+            ////FLOAT
+            //float[] value = new float[1] { 10.54f };
+            //ControlPLCMishubishi.WriteFloat(1, "WRITE_FLOAT", 1, ref value);
 
-            //DWORD
-            //int[] res = new int[1] { 20 };
-            //ControlPLCMishubishi.WriteDWord(1, "D45000", 1, ref res);
+            ////DWORD
+            //int[] res = new int[1] { 12321 };
+            //ControlPLCMishubishi.WriteDWord(1, "WRITE_DWORD", 1, ref res);
 
-            //WORD
-            //short[] rs = new short[1] { 1 };
-            //ControlPLCMishubishi.WriteWord(1, "D45000", 1, ref rs);
+            ////WORD
+            //short[] rs = new short[1] { 11 };
+            //ControlPLCMishubishi.WriteWord(1, "WRITE_WORD", 1, ref rs);
 
-            //BIT
-            //ControlPLCMishubishi.WriteBit(1, "M34000", true);
+            ////BIT
+            //ControlPLCMishubishi.WriteBit(1, "WRITE_BIT_ALIVE", true);
         }
 
         //READ
-        private void button1_Click_1(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
-            //STRING
-            //var a = ControlPLCMishubishi.ReadString(1, "D45000", 10); //10 bit
-            //Console.WriteLine(a);
+            ////STRING
+            ////var a = ControlPLCMishubishi.ReadString(1, "D45000", 25); //25 length
+            ////Console.WriteLine(a);
 
-            //FLOAT
-            //float[] res = new float[1];
-            //ControlPLCMishubishi.ReadFloat(1, "D45000", 1, out res);
-            //Console.WriteLine(res[0]);
+            ////FLOAT
+            ////float[] res = new float[1];
+            ////ControlPLCMishubishi.ReadFloat(1, "D45000", 1, out res);
+            ////Console.WriteLine(res[0]);
 
-            //DWORD
-            //int[] res = new int[1];
-            //ControlPLCMishubishi.ReadDWord(1, "D45000", 1, out res);
-            //Console.WriteLine(res[0]);
+            ////DWORD
+            ////int[] res = new int[1];
+            ////ControlPLCMishubishi.ReadDWord(1, "D45000", 1, out res);
+            ////Console.WriteLine(res[0]);
 
-            //WORD
-            //ControlPLCMishubishi.ReadWord(1, "D45000", 1, out short[] rs);
-            //Console.WriteLine(rs[0]);
+            ////WORD
+            ////ControlPLCMishubishi.ReadWord(1, "D45000", 1, out short[] rs);
+            ////Console.WriteLine(rs[0]);
 
-            //BIT
-            //ControlPLCMishubishi.WriteBit(1, "M34000", false);
+            ////BIT
+            ////ControlPLCMishubishi.WriteBit(1, "M34000", false);
         }
 
         private void Register_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var obj = sender as Register;
 
-            if (obj.Title == "ALIVE")
-            {
-                Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
-            }
-            else if (obj.Title == "TEST_ALIVE")
-            {
-                Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
-            }
+            Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
+
+            //if (obj.Title == "ALIVE")
+            //{
+            //    Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
+            //}
+            //else if (obj.Title == "TEST_ALIVE")
+            //{
+            //    Console.WriteLine($"PLC {obj.PlcIndex}: {obj.Title} changed to {obj.CurrentValue}");
+            //}
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -110,25 +116,80 @@ namespace MS_Seed
 
         private void ConfigurePLCRegisters(ControlPLCMishubishi plc, int plcIndex)
         {
-            if (plcIndex == 1)
+            if (plcIndex == (int)Enums.PLC.PLC_1)
             {
                 plc.ConfigureRegisters(
-                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
+                    new Register { Title = "READ_BIT_ALIVE", Address = "M34000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = true  }, //READ
+                    new Register { Title = "WRITE_BIT_ALIVE", Address = "M34000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_WORD", Address = "D45000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_WORD", Address = "D45000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_DWORD", Address = "D45100", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_DWORD", Address = "D45100", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_STRING", Address = "D45200", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_STRING", Address = "D45200", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_FLOAT", Address = "D45300", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_FLOAT", Address = "D45300", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = false } //WRITE
                 );
             }
-            else if (plcIndex == 2)
+            else if (plcIndex == (int)Enums.PLC.PLC_2)
             {
                 plc.ConfigureRegisters(
-                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
+                    new Register { Title = "READ_BIT_ALIVE", Address = "M34000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_BIT_ALIVE", Address = "M34050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_WORD", Address = "D45000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_WORD", Address = "D45050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_DWORD", Address = "D45100", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_DWORD", Address = "D45150", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_STRING", Address = "D45200", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_STRING", Address = "D45250", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_FLOAT", Address = "D45300", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_FLOAT", Address = "D45350", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = false } //WRITE
                 );
             }
-            else if (plcIndex == 3)
+            else if (plcIndex == (int)Enums.PLC.PLC_3)
             {
                 plc.ConfigureRegisters(
-                    new Register { Title = "ALIVE", Address = "M34000", PlcIndex = plcIndex },
-                    new Register { Title = "TEST_ALIVE", Address = "M34010", PlcIndex = plcIndex }
+                    new Register { Title = "READ_BIT_ALIVE", Address = "M34000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_BIT_ALIVE", Address = "M34050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_WORD", Address = "D45000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_WORD", Address = "D45050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_DWORD", Address = "D45100", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_DWORD", Address = "D45150", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_STRING", Address = "D45200", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_STRING", Address = "D45250", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_FLOAT", Address = "D45300", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_FLOAT", Address = "D45350", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = false } //WRITE
+                );
+            }
+            else if (plcIndex == (int)Enums.PLC.PLC_4)
+            {
+                plc.ConfigureRegisters(
+                    new Register { Title = "READ_BIT_ALIVE", Address = "M34000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_BIT_ALIVE", Address = "M34050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.BIT, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_WORD", Address = "D45000", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_WORD", Address = "D45050", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.WORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_DWORD", Address = "D45100", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_DWORD", Address = "D45150", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.DWORD, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_STRING", Address = "D45200", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_STRING", Address = "D45250", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.STRING, ReadAlway = false }, //WRITE
+
+                    new Register { Title = "READ_FLOAT", Address = "D45300", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.READ, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = true }, //READ
+                    new Register { Title = "WRITE_FLOAT", Address = "D45350", PlcIndex = plcIndex, ReadOrWrite = READ_OR_WRITE.WRITE, TypeDataPLC = TYPE_DATA_PLC.FLOAT, ReadAlway = false } //WRITE
                 );
             }
         }
