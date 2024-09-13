@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using MS_Seed.Common;
+using OfficeOpenXml;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -21,6 +22,7 @@ namespace MS_Seed
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+                Files.AutoDeleteFileLog();
                 Application.Run(new FormMain());
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             }

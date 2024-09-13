@@ -49,17 +49,11 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
         {
             try
             {
-                if (plc.Open() == 0)
-                {
-                    return true;
-                }
-
-                Global.ShowBoxError($"Error connect to PLC station number {_stationNumber} failed!");
-                return false;
+                return plc.Open() == 0;
             }
             catch (Exception ex)
             {
-                Global.ShowBoxError($"Error can not connect to PLC {_stationNumber}, err: {ex.Message}!");
+                Files.WriteLog($"Error can not connect to PLC {_stationNumber}, err: {ex.Message}!");
                 return false;
             }
         }
@@ -160,7 +154,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Write Bit unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -182,7 +175,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return value == 1;
                 }
 
-                Global.ShowBoxError("Read Bit unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -204,7 +196,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Write Word unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -228,7 +219,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Read Word unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -260,7 +250,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Write DWord unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -291,7 +280,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Read DWord unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -315,7 +303,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Write string unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -337,7 +324,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return ConvertShortArrToString(res4);
                 }
 
-                Global.ShowBoxError("Read string unsuccessfully!");
                 return string.Empty;
             }
             catch (Exception ex)
@@ -368,7 +354,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Write float unsuccessfully!");
                 return false;
             }
             catch (Exception ex)
@@ -399,7 +384,6 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
                     return true;
                 }
 
-                Global.ShowBoxError("Read float unsuccessfully!");
                 return false;
             }
             catch (Exception ex)

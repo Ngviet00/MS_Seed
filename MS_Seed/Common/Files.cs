@@ -1,7 +1,11 @@
-﻿using System;
+﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MS_Seed.Common
@@ -68,15 +72,101 @@ namespace MS_Seed.Common
         }
 
         //write csv
-        public static void WriteCSV()
+        public static void WriteCSV(string path)
         {
+            lock (lockWriteCSV)
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
+                path = Path.Combine(path, Path.GetFileName(path));
+
+                string formattedDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                bool fileExists = File.Exists(path);
+
+                using (var writer = new StreamWriter(path, true, Encoding.UTF8))
+                {
+                    if (!fileExists)
+                    {
+                        string[] headers = { "Product Day", "Product Time" };
+                        writer.WriteLine(string.Join(",", headers));
+                    }
+
+                    string[] data = {
+                        formattedDateTime.Substring(0, 10),
+                        formattedDateTime.Substring(11)
+                    };
+
+                    writer.WriteLine(string.Join(",", data));
+                }
+            }
         }
 
         //write excel
-        public static void WriteExcel()
+        public static void WriteExcel(string path)
         {
+            lock (lockWriteExcel)
+            {
+                try
+                {
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
 
+                    path = Path.Combine(path, DateTime.Now.ToString("yyyyMMdd") + ".xlsx");
+
+                    string formattedDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                    using (var package = new ExcelPackage(new FileInfo(path)))
+                    {
+                        var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+
+                        if (worksheet == null)
+                        {
+                            worksheet = package.Workbook.Worksheets.Add("Results");
+
+                            worksheet.Cells["A1:X1"].Merge = true;
+                            worksheet.Cells["A1"].Value = "We would like to request an update on items that will be added/deleted during actual writing.";
+                            worksheet.Cells["T2:U2"].Merge = true;
+                            worksheet.Cells["T2"].Value = "Air Leakage Test";
+
+                            string[] headers = {
+                                "Top Housing QRCode", "1st Glue Amount", "1st  Glue discharge volume Vision", "Insulator bar code",
+                                "1st Glue overflow vision", "1st heated Air curing", "2nd Glue Amount", "2nd  Glue discharge volume Vision",
+                                "FPCB bar code", "2nd Glue overflow vision", "2nd heated Air curing", "Distance", "3rd Glue Amount",
+                                "3rd Glue discharge volume Vision", "3rd heated Air curing", "3rd Glue overflow vision",
+                                "Tightness and location vision", "Height / Parallelism", "Resistance", "Air Leakage Test", "Air Leakage Test Result", "Product Day", "Product Time"
+                            };
+
+                            for (int i = 0; i < headers.Length; i++)
+                            {
+                                worksheet.Cells[2, i + 1].Value = headers[i];
+                            }
+
+                            package.Save();
+                        }
+
+                        int rowIndex = worksheet.Dimension?.Rows + 1 ?? 1;
+
+                        worksheet.Cells[rowIndex, 1].Value = formattedDateTime.Substring(0, 10);
+                        worksheet.Cells[rowIndex, 3].Value = formattedDateTime.Substring(11);
+
+                        //if duplicate
+                        //worksheet.Row(rowIndex).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        //worksheet.Row(rowIndex).Style.Fill.BackgroundColor.SetColor(Color.Red);
+
+                        package.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteLog($"Error can not save to file excel, error: {ex.Message}");
+                }
+            }
         }
 
         public static void WriteFileToTxt(string filePath, Dictionary<string, string> values)
@@ -156,77 +246,74 @@ namespace MS_Seed.Common
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "setting.txt");
         }
 
-        //public static void ThreadAutoDeleteOldFile()
-        //{
-        //    Task.Run(async () =>
-        //    {
-        //        try
-        //        {
-        //            int day = int.Parse(ConfigurationManager.AppSettings["DAY_AUTO_DELETE_OLD_FILE"]);
-        //            string autoDelete = ConfigurationManager.AppSettings["AUTO_DELETE_OLD_FILE"];
+        public static void AutoDeleteFileLog()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    int day = int.Parse(ConfigurationManager.AppSettings["DAY_AUTO_DELETE_FILE_LOG"]);
+                    string AutoDelete = ConfigurationManager.AppSettings["AUTO_DELETE_FILE_LOG"];
 
-        //            while (true)
-        //            {
-        //                if (autoDelete == "true")
-        //                {
-        //                    //DeleteFileLog();
-        //                }
+                    while (true)
+                    {
+                        if (AutoDelete == "true")
+                        {
+                            DateTime now = DateTime.Now;
+                            DeleteFileLog(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"), now, day);
+                        }
 
-        //                await Task.Delay(TimeSpan.FromDays(1));
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
+                        await Task.Delay(TimeSpan.FromDays(1));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Files.WriteLog($"Error can not delete file log, error: {ex.Message}");
+                }
+            });
+        }
 
-        //        }
-        //    });
-        //}
+        private static void DeleteFileLog(string path, DateTime now, int dayDelete)
+        {
+            if (!Directory.Exists(path))
+            {
+                WriteLog($"Not found path to delete file!");
+                return;
+            }
 
-        //public static void DeleteFileLog(string path, DateTime now, int dayDelete)
-        //{
-        //    Task.Run(async () =>
-        //    {
+            int batchSize = 1000;
 
-        //    });
+            var fileBatch = Directory.EnumerateFiles(path).Take(batchSize);
 
-        //    if (!Directory.Exists(path))
-        //    {
-        //        WriteLog($"Not found path to delete file!");
-        //        return;
-        //    }
+            while (fileBatch.Any())
+            {
+                foreach (var file in fileBatch)
+                {
+                    DateTime creationTime = File.GetCreationTime(file);
+                    TimeSpan fileAge = now - creationTime;
 
-        //    int batchSize = 1000;
+                    if (fileAge.TotalDays > dayDelete)
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteLog($"Error can not delete file, error: {ex.Message}");
+                        }
+                    }
+                }
 
-        //    var fileBatch = Directory.EnumerateFiles(path).Take(batchSize);
+                fileBatch = Directory.EnumerateFiles(path).Skip(batchSize).Take(batchSize);
+            }
 
-        //    while (fileBatch.Any())
-        //    {
-        //        foreach (var file in fileBatch)
-        //        {
-        //            DateTime creationTime = File.GetCreationTime(file);
-        //            TimeSpan fileAge = now - creationTime;
-        //            if (fileAge.TotalDays > dayDelete)
-        //            {
-        //                try
-        //                {
-        //                    File.Delete(file);
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    WriteLog($"Error can not delete file, error: {ex.Message}");
-        //                }
-        //            }
-        //        }
+            var directories = Directory.GetDirectories(path);
 
-        //        fileBatch = Directory.EnumerateFiles(path).Skip(batchSize).Take(batchSize);
-        //    }
-
-        //    var directories = Directory.GetDirectories(path);
-
-        //    foreach (var directory in directories)
-        //    {
-        //        DeleteFileLog(directory, now, dayDelete);
-        //    }
-        //}
+            foreach (var directory in directories)
+            {
+                DeleteFileLog(directory, now, dayDelete);
+            }
+        }
     }
 }
