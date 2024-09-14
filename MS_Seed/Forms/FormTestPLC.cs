@@ -144,10 +144,16 @@ namespace MS_Seed.Forms
 
         private void FormTestPLC_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach (var plc in _listPlc.ToList())
+            Task.Run(() =>
             {
-                plc.DisconnectPLC();
-            }
+                foreach (var plc in _listPlc.ToList())
+                {
+                    plc.DisconnectPLC();
+                    plc.Registers.Clear();
+                }
+
+                _listPlc.ToList().Clear();
+            });
         }
 
         private void BtnWriteBit_Click(object sender, EventArgs e)
@@ -158,8 +164,7 @@ namespace MS_Seed.Forms
                 return;
             }
 
-            ControlPLCMishubishi.WriteBit(int.Parse(txtWritePlc1.Text), txtWriteRegister1.Text, txtWriteValue1.Text == "1" ? true : false);
-            SetValueToTextBox("Write bit successfully!");
+            ControlPLCMishubishi.WriteBit(int.Parse(txtWritePlc1.Text), txtWriteRegister1.Text, int.Parse(txtWriteValue1.Text) == 1 ? true : false);
         }
 
         private void BtnWriteWord_Click(object sender, EventArgs e)
@@ -172,7 +177,6 @@ namespace MS_Seed.Forms
 
             short[] rs = new short[1] { short.Parse(txtWriteValue2.Text) };
             ControlPLCMishubishi.WriteWord(int.Parse(txtWritePlc2.Text), txtWriteRegister2.Text, 1, ref rs);
-            SetValueToTextBox("Write word successfully!");
         }
 
         private void BtnWriteDWord_Click(object sender, EventArgs e)
@@ -195,54 +199,49 @@ namespace MS_Seed.Forms
                 return;
             }
 
-            ControlPLCMishubishi.WriteString(1, "D45550", "VIET_NV_1");
+            ControlPLCMishubishi.WriteString(int.Parse(txtWritePlc4.Text), txtWriteRegister4.Text , txtWriteValue4.Text);
         }
 
         private void BtnWriteFloat_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtWriteRegister3.Text) || string.IsNullOrWhiteSpace(txtWriteValue3.Text) || string.IsNullOrWhiteSpace(txtWritePlc3.Text))
+            if (string.IsNullOrWhiteSpace(txtWriteRegister5.Text) || string.IsNullOrWhiteSpace(txtWriteValue5.Text) || string.IsNullOrWhiteSpace(txtWritePlc5.Text))
             {
                 Global.ShowBoxError("Can not empty register, value or Plc");
                 return;
             }
 
-            float[] value = new float[1] { 4.1f };
-            ControlPLCMishubishi.WriteFloat(1, "WRITE_FLOAT", 1, ref value);
+            float[] value = new float[1] { float.Parse(txtWriteValue5.Text) };
+            ControlPLCMishubishi.WriteFloat(int.Parse(txtWritePlc5.Text), txtWriteRegister5.Text, 1, ref value);
         }
 
         private void BtnReadBit_Click(object sender, EventArgs e)
         {
-            //var b = ControlPLCMishubishi.ReadBit(1, "READ_BIT_ALIVE");
-            //Console.WriteLine(b);
+            var rs = ControlPLCMishubishi.ReadBit(1, "READ_BIT_ALIVE");
+            SetValueToTextBox($"Read BIT to {rs}");
         }
 
         private void BtnReadWord_Click(object sender, EventArgs e)
         {
-            ////WORD
-            //ControlPLCMishubishi.ReadWord(1, "READ_WORD", 1, out short[] rsWord);
-            //Console.WriteLine(rsWord[0]);
+            ControlPLCMishubishi.ReadWord(1, "READ_WORD", 1, out short[] rsWord);
+            SetValueToTextBox($"Read WORD to {rsWord[0]}");
         }
 
         private void BtnReadDWord_Click(object sender, EventArgs e)
         {
-
-            ////DWORD
-            //int[] rsDword = new int[1];
-            //ControlPLCMishubishi.ReadDWord(1, "READ_DWORD", 1, out rsDword);
-            //Console.WriteLine(rsDword[0]);
+            ControlPLCMishubishi.ReadDWord(1, "READ_DWORD", 1, out int[] rsDword);
+            SetValueToTextBox($"Read DWORD to {rsDword[0]}");
         }
 
         private void BtnReadString_Click(object sender, EventArgs e)
         {
-            ////STRING
-            //var a = ControlPLCMishubishi.ReadString(1, "READ_STRING", 25); //25 length
-            //Console.WriteLine(a);
+            var rs = ControlPLCMishubishi.ReadString(1, "READ_STRING", 25); //25 length
+            SetValueToTextBox($"Read STRING to {rs}");
         }
 
         private void BtnReadFloat_Click(object sender, EventArgs e)
         {
             ControlPLCMishubishi.ReadFloat(1, "READ_FLOAT", 1, out float[] rsFloat);
-            Console.WriteLine(rsFloat[0]);
+            SetValueToTextBox($"Read FLOAT to {rsFloat[0]}");
         }
 
         public void SetValueToTextBox(string message)

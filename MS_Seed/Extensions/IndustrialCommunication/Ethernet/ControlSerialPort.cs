@@ -8,7 +8,11 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
 {
     public class ControlSerialPort
     {
-        private readonly SerialPort serialPort;
+        public static ControlSerialPort _instance;
+
+        private static readonly object _lock = new object();
+
+        private SerialPort serialPort;
 
         private readonly string portName = ConfigurationManager.AppSettings["PORT_NAME"] ?? "COM1";
 
@@ -20,16 +24,31 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
 
         private readonly Enum stopBits = (StopBits)Enum.Parse(typeof(StopBits), ConfigurationManager.AppSettings["STOP_BITS"] ?? "1");
 
-        public ControlSerialPort()
+        public static ControlSerialPort Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new ControlSerialPort();
+                    }
+                    return _instance;
+                }
+            }
+        }
+
+        public void Connect()
         {
             if (!PortExists(portName))
             {
-                Global.ShowBoxError("COM port not exists!");
+                Global.ShowBoxError("Port COM not exists!");
                 return;
             }
 
             serialPort = new SerialPort(portName, baudRate, (Parity)parity, dataBits, (StopBits)stopBits);
-            serialPort.DataReceived += SerialPort_DataReceived;
+            serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
         }
 
         public void Open()

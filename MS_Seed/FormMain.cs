@@ -1,4 +1,5 @@
 ﻿using MS_Seed.Forms;
+using MS_Seed.IndustrialCommunication.Ethernet;
 using System;
 using System.Windows.Forms;
 
@@ -9,17 +10,8 @@ namespace MS_Seed
         public FormMain()
         {
             InitializeComponent();
-
-            //PRINT
-            //Task.Run(() =>
-            //{
-            //    ZebraZT411Printer.Instance.Print("test_printer");
-            //});
-        }
-        
-        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
+            ControlSerialPort.Instance.Connect();
+            ControlSerialPort.Instance.Open();
         }
 
         private void pictureBtnSetting_Click(object sender, EventArgs e)
@@ -37,6 +29,6 @@ namespace MS_Seed
         {
             FormTestPLC formPLC = new FormTestPLC();
             formPLC.ShowDialog();
-        }
+        } 
     }
 }

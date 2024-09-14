@@ -60,8 +60,9 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
 
         public void DisconnectPLC()
         {
-            plc.Close();
             StopReading();
+            plc.Disconnect();
+            plc.Close();
         }
 
         public void StartReading()
@@ -83,7 +84,7 @@ namespace MS_Seed.Extensions.IndustrialCommunication.PLC
 
             while (isReading)
             {
-                foreach (var register in Registers)
+                foreach (var register in Registers.ToList())
                 {
                     if (register.TypeDataPLC == TYPE_DATA_PLC.BIT)
                     {

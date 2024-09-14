@@ -1,4 +1,4 @@
-﻿namespace MS_Seed.UserControls.Charts
+﻿namespace CIM
 {
     partial class LineChart
     {
@@ -28,10 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.cartesianChart1 = new LiveCharts.WinForms.CartesianChart();
+            this.SuspendLayout();
+            // 
+            // cartesianChart1
+            // 
+            this.cartesianChart1.Location = new System.Drawing.Point(3, 3);
+            this.cartesianChart1.Name = "cartesianChart1";
+            this.cartesianChart1.Size = new System.Drawing.Size(538, 158);
+            this.cartesianChart1.TabIndex = 0;
+            this.cartesianChart1.Text = "cartesianChart1";
+            // 
+            // LineChart
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cartesianChart1);
+            this.Name = "LineChart";
+            this.Size = new System.Drawing.Size(554, 175);
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private LiveCharts.WinForms.CartesianChart cartesianChart1;
     }
 }

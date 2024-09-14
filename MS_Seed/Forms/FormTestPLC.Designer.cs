@@ -534,6 +534,7 @@
             this.Controls.Add(this.BtnWriteWord);
             this.Controls.Add(this.txtResult);
             this.Controls.Add(this.BtnWriteBit);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "FormTestPLC";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "1";

@@ -12,39 +12,29 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
 {
     public class ControlTCP_IP
     {
-        public FormMain formMain { get; set; }
+        public FormMain FormMain { get; set; }
 
-        private TcpListener server;
-        private List<TcpClient> clientList;
-
-        private bool isListening = false;
-        private int maxClients;
+        private TcpListener Server;
+        private List<TcpClient> ClientList = new List<TcpClient>();
+        private bool IsListening = false;
+        private readonly int MaxClients = int.Parse(ConfigurationManager.AppSettings["MAXCLIENT_TCP_IP"]);
         public event EventHandler<Tuple<Data, NetworkStream, IPEndPoint>> DataReceived;
         private Dictionary<TcpClient, IPEndPoint> clientInfo;
-
-        public string ipAddress = ConfigurationManager.AppSettings["IPAddress"];
-        public int port = int.Parse(ConfigurationManager.AppSettings["Port"]);
-
-        public string Client1 = ConfigurationManager.AppSettings["Client1IP"];
-        public string Client2 = ConfigurationManager.AppSettings["Client2IP"];
-
-        public string FixIP = ConfigurationManager.AppSettings["FixIP"];
+        public IPAddress ip = IPAddress.Parse(ConfigurationManager.AppSettings["IP_TCP_IP"]);
+        public int port = int.Parse(ConfigurationManager.AppSettings["PORT_TCP_IP"]);
 
         public ControlTCP_IP()
         {
-            maxClients = int.Parse(ConfigurationManager.AppSettings["MaxClients"]);
-            clientList = new List<TcpClient>();
-            IPAddress ip = IPAddress.Parse(ipAddress);
-            server = new TcpListener(ip, port);
+            Server = new TcpListener(ip, port);
             clientInfo = new Dictionary<TcpClient, IPEndPoint>();
         }
 
-        public void StartServer()
+        public void Open()
         {
             try
             {
-                server.Start();
-                isListening = true;
+                Server.Start();
+                IsListening = true;
                 Files.WriteLog("Server started...");
                 Task.Run(() => AcceptClients());
             }
@@ -58,16 +48,16 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
         {
             try
             {
-                while (isListening && clientInfo.Count < maxClients)
+                while (IsListening && clientInfo.Count < MaxClients)
                 {
-                    TcpClient client = await server.AcceptTcpClientAsync();
+                    TcpClient client = await Server.AcceptTcpClientAsync();
                     IPEndPoint clientEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
                     NetworkStream stream = client.GetStream();
 
                     lock (clientInfo)
                     {
                         clientInfo[client] = clientEndPoint;
-                        SendResponseToClient(stream, "OK\n");
+                        SendClient(stream, "OK\n");
                     }
 
                     Files.WriteLog("Client connected: " + clientEndPoint.ToString());
@@ -106,24 +96,10 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
             finally
             {
                 client.Close();
-                lock (clientList)
+                lock (ClientList)
                 {
-                    clientList.Remove(client);
+                    ClientList.Remove(client);
                 }
-            }
-        }
-
-        private void SendResponseToClient(NetworkStream stream, string response)
-        {
-            try
-            {
-                byte[] responseBuffer = Encoding.ASCII.GetBytes(response);
-                stream.Write(responseBuffer, 0, responseBuffer.Length);
-                Files.WriteLog("Send data to client:" + response);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error sending response to client: " + ex.Message);
             }
         }
 
@@ -135,16 +111,16 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
 
                 var data = input.Split(',');
 
-                result.WaitTime = data.Length > 0 ? data[0] : string.Empty;
-                result.Overtime = data.Length > 1 ? data[1] : string.Empty;
-                result.Pressure = data.Length > 2 ? data[2] : string.Empty;
-                result.TimeVacuum = data.Length > 3 ? data[3] : string.Empty;
-                result.TemperatureOrdinary = data.Length > 4 ? data[4] : string.Empty;
-                result.TimeStartLot = data.Length > 5 ? data[5] : string.Empty;
-                result.TimeEndLot = data.Length > 6 ? data[6] : string.Empty;
-                result.Vent = data.Length > 7 ? data[7] : string.Empty;
-                result.TimeVent = data.Length > 8 ? data[8] : string.Empty;
-                result.TemperatureWorking = data.Length > 9 ? data[9] : string.Empty;
+                //result.WaitTime = data.Length > 0 ? data[0] : string.Empty;
+                //result.Overtime = data.Length > 1 ? data[1] : string.Empty;
+                //result.Pressure = data.Length > 2 ? data[2] : string.Empty;
+                //result.TimeVacuum = data.Length > 3 ? data[3] : string.Empty;
+                //result.TemperatureOrdinary = data.Length > 4 ? data[4] : string.Empty;
+                //result.TimeStartLot = data.Length > 5 ? data[5] : string.Empty;
+                //result.TimeEndLot = data.Length > 6 ? data[6] : string.Empty;
+                //result.Vent = data.Length > 7 ? data[7] : string.Empty;
+                //result.TimeVent = data.Length > 8 ? data[8] : string.Empty;
+                //result.TemperatureWorking = data.Length > 9 ? data[9] : string.Empty;
 
                 Console.WriteLine("test-data-receive");
             }
@@ -154,22 +130,42 @@ namespace MS_Seed.IndustrialCommunication.Ethernet
             }
         }
 
-        public void StopServer()
+        private void SendClient(NetworkStream stream, string response)
         {
             try
             {
-                isListening = false;
-                foreach (var client in clientList)
-                {
-                    client.Close();
-                }
-                clientList.Clear();
-                server.Stop();
-                Console.WriteLine("Server stopped.");
+                byte[] responseBuffer = Encoding.ASCII.GetBytes(response);
+                stream.Write(responseBuffer, 0, responseBuffer.Length);
+                Files.WriteLog("Send data to client:" + response);
+
+                Console.WriteLine(response);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error stopping server: " + ex.Message);
+                Console.WriteLine("Error sending response to client: " + ex.Message);
+            }
+        }
+
+        public void Close()
+        {
+            try
+            {
+                IsListening = false;
+
+                foreach (var client in ClientList)
+                {
+                    client.Close();
+                }
+
+                ClientList.Clear();
+
+                Server.Stop();
+
+                Files.WriteLog("Server stopped.");
+            }
+            catch (Exception ex)
+            {
+                Files.WriteLog("Error close server: " + ex.Message);
             }
         }
     }
