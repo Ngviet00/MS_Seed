@@ -537,7 +537,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "FormTestPLC";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "1";
+            this.Text = "Form Test PLC";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormTestPLC_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
