@@ -10,8 +10,6 @@ namespace MS_Seed
         public FormMain()
         {
             InitializeComponent();
-            ControlSerialPort.Instance.Connect();
-            ControlSerialPort.Instance.Open();
         }
 
         private void pictureBtnSetting_Click(object sender, EventArgs e)
