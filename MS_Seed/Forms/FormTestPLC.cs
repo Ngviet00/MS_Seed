@@ -1,11 +1,12 @@
-﻿using MS_Seed.Common;
-using MS_Seed.Extensions.IndustrialCommunication.PLC;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using UtilCommon;
+using UtilCommon.Enums;
+using UtilCommon.PLC;
 
 namespace MS_Seed.Forms
 {

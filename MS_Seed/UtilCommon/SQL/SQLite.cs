@@ -1,18 +1,18 @@
-﻿using MS_Seed.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
 using System.IO;
 
-namespace MS_Seed.SQL
+namespace UtilCommon.SQL
 {
     public class SQLite
     {
         private static SQLite _instance;
         private static readonly object _lock = new object();
         private SQLiteConnection _connection;
-        private readonly string ConnectionString = ConfigurationManager.AppSettings["CONNECTION_STRING_SQLITE"];
+        private string ConnectionString = ConfigurationManager.AppSettings["CONNECTION_STRING_SQLITE"];
+        private string projectName = ConfigurationManager.AppSettings["PROJECT_NAME"];
 
         public static SQLite Instance
         {
@@ -33,6 +33,11 @@ namespace MS_Seed.SQL
         {
             try
             {
+                if (!string.IsNullOrEmpty(projectName) && !string.IsNullOrEmpty(ConnectionString))
+                {
+                    ConnectionString = ConnectionString.Replace("MS_Seed", projectName);
+                }
+
                 string dbFilePath = ConnectionString.Split('=')[1].Trim();
 
                 string directoryPath = Path.GetDirectoryName(dbFilePath);

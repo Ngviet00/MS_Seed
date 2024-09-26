@@ -1,9 +1,8 @@
-﻿using MS_Seed.Common;
-using System.Configuration;
+﻿using System.Configuration;
 using Zebra.Sdk.Comm;
 using Zebra.Sdk.Printer;
 
-namespace MS_Seed.Extensions.Printer
+namespace UtilCommon.Printer
 {
     public class ZebraZT411Printer
     {

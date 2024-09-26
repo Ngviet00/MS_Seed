@@ -1,10 +1,9 @@
-﻿using MS_Seed.Common;
-using System;
+﻿using System;
 using System.Configuration;
 using System.IO.Ports;
 using System.Linq;
 
-namespace MS_Seed.IndustrialCommunication.Ethernet
+namespace UtilCommon.Ethernet
 {
     public class ControlSerialPort
     {

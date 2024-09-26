@@ -220,44 +220,45 @@
     <Compile Include="Classes\Data.cs" />
     <Compile Include="Classes\TestSaveExcel.cs" />
     <Compile Include="Classes\TestSaveCSV.cs" />
-    <Compile Include="Common\Files.cs" />
-    <Compile Include="Enums\Enums.cs" />
-    <Compile Include="Extensions\IndustrialCommunication\PLC\ControlPLCMishubishi.cs" />
-    <Compile Include="Extensions\Printer\ZebraZT411Printer.cs" />
-    <Compile Include="FormMain.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormMain.Designer.cs">
-      <DependentUpon>FormMain.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Common\Global.cs" />
-    <Compile Include="Forms\FormSetting.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FormSetting.Designer.cs">
-      <DependentUpon>FormSetting.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\IndustrialCommunication\Ethernet\ControlTCP_IP.cs" />
-    <Compile Include="Extensions\IndustrialCommunication\Ethernet\ControlSerialPort.cs" />
     <Compile Include="Forms\FormTestPLC.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\FormTestPLC.Designer.cs">
       <DependentUpon>FormTestPLC.cs</DependentUpon>
     </Compile>
+    <Compile Include="UtilCommon\ConnectCAM\TestConnectCAM.cs" />
+    <Compile Include="UtilCommon\Enums\Enums.cs" />
+    <Compile Include="UtilCommon\PLC\ControlPLCMishubishi.cs" />
+    <Compile Include="UtilCommon\Files.cs" />
+    <Compile Include="UtilCommon\Global.cs" />
+    <Compile Include="UtilCommon\Printer\ZebraZT411Printer.cs" />
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMain.Designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FormSetting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormSetting.Designer.cs">
+      <DependentUpon>FormSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilCommon\Ethernet\ControlTCP_IP.cs" />
+    <Compile Include="UtilCommon\Ethernet\ControlSerialPort.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Extensions\SQL\SQLite.cs" />
-    <Compile Include="UserControls\Charts\LineChart.cs">
+    <Compile Include="UtilCommon\SQL\SQLite.cs" />
+    <Compile Include="UtilCommon\UserControls\Charts\LineChart.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserControls\Charts\LineChart.Designer.cs">
+    <Compile Include="UtilCommon\UserControls\Charts\LineChart.Designer.cs">
       <DependentUpon>LineChart.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\Charts\PieChart.cs">
+    <Compile Include="UtilCommon\UserControls\Charts\PieChart.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserControls\Charts\PieChart.Designer.cs">
+    <Compile Include="UtilCommon\UserControls\Charts\PieChart.Designer.cs">
       <DependentUpon>PieChart.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="FormMain.resx">
@@ -279,10 +280,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="UserControls\Charts\LineChart.resx">
+    <EmbeddedResource Include="UtilCommon\UserControls\Charts\LineChart.resx">
       <DependentUpon>LineChart.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UserControls\Charts\PieChart.resx">
+    <EmbeddedResource Include="UtilCommon\UserControls\Charts\PieChart.resx">
       <DependentUpon>PieChart.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -301,6 +302,11 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="UtilCommon\Resources\settings.png" />
+    <None Include="UtilCommon\Resources\plc.png" />
+    <None Include="UtilCommon\Resources\MSlogo.png" />
+    <None Include="UtilCommon\Resources\images.jfif" />
+    <None Include="UtilCommon\Resources\database.png" />
     <None Include="Resources\MSlogo.png" />
     <None Include="Resources\images.jfif" />
     <None Include="Resources\settings.png" />

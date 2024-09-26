@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace MS_Seed.Common
+namespace UtilCommon
 {
     public static class Global
     {

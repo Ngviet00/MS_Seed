@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MS_Seed.Common
+namespace UtilCommon
 {
     public static class Files
     {
@@ -17,7 +17,7 @@ namespace MS_Seed.Common
         private static object lockWriteCSV = new object();
         private static object lockWriteFileTxt = new object();
         private static object lockWriteExcel = new object();
-
+        
         //write log
         public static void WriteLog(string message)
         {

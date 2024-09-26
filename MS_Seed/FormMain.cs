@@ -1,5 +1,4 @@
 ﻿using MS_Seed.Forms;
-using MS_Seed.IndustrialCommunication.Ethernet;
 using System;
 using System.Windows.Forms;
 

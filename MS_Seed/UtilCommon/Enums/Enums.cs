@@ -1,4 +1,4 @@
-﻿namespace MS_Seed
+﻿namespace UtilCommon.Enums
 {
     public class Enums
     {

@@ -1,5 +1,4 @@
-﻿using MS_Seed.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Net.Sockets;
 using System.Net;
@@ -7,8 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System;
 using MS_Seed.Classes;
+using MS_Seed;
 
-namespace MS_Seed.IndustrialCommunication.Ethernet
+namespace UtilCommon.Ethernet
 {
     public class ControlTCP_IP
     {
