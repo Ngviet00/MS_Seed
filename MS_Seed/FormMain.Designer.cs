@@ -41,6 +41,8 @@
             this.picturePLC = new System.Windows.Forms.PictureBox();
             this.pictureBtnSetting = new System.Windows.Forms.PictureBox();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.richTextBoxLogs = new System.Windows.Forms.RichTextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -181,12 +183,35 @@
             this.pictureBox4.TabIndex = 7;
             this.pictureBox4.TabStop = false;
             // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(1149, 275);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(30, 13);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "Logs";
+            // 
+            // richTextBoxLogs
+            // 
+            this.richTextBoxLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBoxLogs.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBoxLogs.Location = new System.Drawing.Point(1152, 291);
+            this.richTextBoxLogs.Name = "richTextBoxLogs";
+            this.richTextBoxLogs.ReadOnly = true;
+            this.richTextBoxLogs.Size = new System.Drawing.Size(221, 448);
+            this.richTextBoxLogs.TabIndex = 10;
+            this.richTextBoxLogs.Text = "";
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1378, 745);
+            this.Controls.Add(this.richTextBoxLogs);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pictureBox4);
             this.Controls.Add(this.panel2);
@@ -204,6 +229,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBtnSetting)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -220,6 +246,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.RichTextBox richTextBoxLogs;
     }
 }
 

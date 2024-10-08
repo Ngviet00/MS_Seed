@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
+using System.Windows;
+using Dapper;
+using MS_Seed.Classes;
 
 namespace UtilCommon.SQL
 {
@@ -82,8 +86,8 @@ namespace UtilCommon.SQL
         {
             try
             {
-                string query = $"UPDATE {table} SET {column} = {value} WHERE 1 = 1";
-                ExecuteNonQuery(query);
+                string query = $"UPDATE {table} SET {column} = @Value WHERE 1 = 1";
+                _connection.Execute(query, new { Value = value });
 
                 return true;
             }
@@ -134,14 +138,7 @@ namespace UtilCommon.SQL
 
                 using (var transaction = _connection.BeginTransaction())
                 {
-                    using (var command = new SQLiteCommand(insertQuery, _connection))
-                    {
-                        command.Parameters.AddWithValue("@qrCode", qrCode);
-                        command.Parameters.AddWithValue("@content", content);
-                        command.Parameters.AddWithValue("@createdAt", createdAt);
-                        command.ExecuteNonQuery();
-                    }
-
+                    _connection.Execute(insertQuery, new { qrCode, content, createdAt }, transaction);
                     transaction.Commit();
 
                     return true;
@@ -154,30 +151,14 @@ namespace UtilCommon.SQL
             }
         }
 
-        public List<object> GetResultSearch(string qrCode)
+        public List<ResultSearch> GetResultSearch(string qrCode)
         {
-            List<object> results = new List<object>();
+            List<ResultSearch> results = new List<ResultSearch>();
 
             try
             {
                 string cmd = @"SELECT * FROM qrcodes WHERE qr_code = @qrCode";
-
-                using (var command = new SQLiteCommand(cmd, _connection))
-                {
-                    command.Parameters.AddWithValue("@qrCode", qrCode);
-
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            //ResultSearch rs = new ResultSearch();
-                            //rs.QrCode = (string)reader["qr_code"];
-                            //rs.Content = (string)reader["content"];
-                            //rs.CreatedAt = (string)reader["created_at"];
-                            //results.Add(rs);
-                        }
-                    }
-                }
+                results = _connection.Query<ResultSearch>(cmd, new { qrCode }).ToList();
 
                 return results;
             }

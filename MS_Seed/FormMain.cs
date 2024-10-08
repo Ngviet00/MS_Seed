@@ -26,6 +26,9 @@ namespace MS_Seed
         {
             FormTestPLC formPLC = new FormTestPLC();
             formPLC.ShowDialog();
-        } 
+        }
+
+        //write log view
+        //richTextBoxLogs.AppendText(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss => ") + "error" + Environment.NewLine);
     }
 }
